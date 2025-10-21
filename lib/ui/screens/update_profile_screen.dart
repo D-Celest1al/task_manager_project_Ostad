@@ -7,6 +7,8 @@ import 'package:task_manager_project/ui/widgets/tm_app_bar.dart';
 class UpdateProfileScreen extends StatefulWidget {
   const UpdateProfileScreen({super.key});
 
+  static const String  name = '/update-profile';
+
   @override
   State<UpdateProfileScreen> createState() => _UpdateProfileScreenState();
 }

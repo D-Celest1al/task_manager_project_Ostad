@@ -1,14 +1,15 @@
+// canceled_task_screen.dart
 import 'package:flutter/material.dart';
 import 'package:task_manager_project/ui/widgets/task_card.dart';
 
-class ProgressTaskScreen extends StatefulWidget {
-  const ProgressTaskScreen({super.key});
+class CanceledTaskScreen extends StatefulWidget {
+  const CanceledTaskScreen({super.key});
 
   @override
-  State<ProgressTaskScreen> createState() => _ProgressTaskScreenState();
+  State<CanceledTaskScreen> createState() => _CanceledTaskScreenState();
 }
 
-class _ProgressTaskScreenState extends State<ProgressTaskScreen> {
+class _CanceledTaskScreenState extends State<CanceledTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,8 +19,8 @@ class _ProgressTaskScreenState extends State<ProgressTaskScreen> {
           itemCount: 10,
           itemBuilder: (context, index) {
             return const TaskCard(
-              statusText: 'In Progress',
-              statusColor: Colors.purple,
+              statusText: 'Canceled',
+              statusColor: Colors.redAccent,
             );
           },
           separatorBuilder: (context, index) => const SizedBox(height: 8),

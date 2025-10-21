@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:task_manager_project/ui/screens/canceled_task_screen.dart';
+import 'package:task_manager_project/ui/screens/completed_task_screen.dart';
 import 'package:task_manager_project/ui/screens/new_task_screen.dart';
 import 'package:task_manager_project/ui/screens/progress_task_screen.dart';
 import 'package:task_manager_project/ui/widgets/tm_app_bar.dart';
@@ -16,8 +18,8 @@ class _MainNavBarHolderScreenState extends State<MainNavBarHolderScreen> {
     // You can replace these placeholders with your actual screen widgets
     NewTaskScreen(), // New Tasks Screen
     ProgressTaskScreen(), // Progress Tasks Screen
-    ProgressTaskScreen(), // Cancelled Tasks Screen
-    ProgressTaskScreen(), // Completed Tasks Screen
+    CanceledTaskScreen(), // Cancelled Tasks Screen
+    CompletedTaskScreen(), // Completed Tasks Screen
   ];
   @override
   Widget build(BuildContext context) {

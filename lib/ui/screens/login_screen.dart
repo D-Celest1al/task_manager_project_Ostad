@@ -1,14 +1,19 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:task_manager_project/data/services/api_caller.dart';
+import 'package:task_manager_project/data/utils/urls.dart';
 import 'package:task_manager_project/ui/screens/forgot_password_verify_email_screen.dart';
 import 'package:task_manager_project/ui/screens/main_nav_bar_holder_screen.dart';
 import 'package:task_manager_project/ui/screens/sign_up_screen.dart';
+import 'package:task_manager_project/ui/widgets/centered_progress_indicator.dart';
 import 'package:task_manager_project/ui/widgets/screen_background.dart';
+import 'package:task_manager_project/ui/widgets/snack_bar_message.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
-  static const String  name = '/login';
+  static const String name = '/login';
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -18,6 +23,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailTEController = TextEditingController();
   final TextEditingController _passwordTEController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  bool _loginInProgress = false;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Form(
                   key: _formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -42,24 +50,41 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextFormField(
                         controller: _emailTEController,
                         decoration: InputDecoration(hintText: 'Email'),
+                        validator: (String? value) {
+                          String inputText = value ?? '';
+                          if (EmailValidator.validate(inputText) == false) {
+                            return 'Please enter a valid email address';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _passwordTEController,
                         obscureText: true,
                         decoration: InputDecoration(hintText: 'Password'),
+                        validator: (String? value) {
+                          if ((value?.length ?? 0) <= 6) {
+                            return 'Password should be more than 6 characters long';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16),
-                      FilledButton(
-                        onPressed: _onTapLoginButton,
-                        child: Icon(Icons.arrow_circle_right_outlined),
+                      Visibility(
+                        visible: _loginInProgress == false,
+                        replacement: CenteredProgressIndicator(),
+                        child: FilledButton(
+                          onPressed: _onTapLoginButton,
+                          child: Icon(Icons.arrow_circle_right_outlined),
+                        ),
                       ),
                       const SizedBox(height: 36),
                       Center(
                         child: Column(
                           children: [
                             TextButton(
-                              onPressed:_onForgotPasswordButton,
+                              onPressed: _onForgotPasswordButton,
                               child: Text(
                                 'Forgot Password?',
                                 style: TextStyle(color: Colors.grey),
@@ -67,13 +92,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             RichText(
                               text: TextSpan(
-                                style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600,
+                                ),
                                 text: "Don't have an account? ",
                                 children: [
                                   TextSpan(
                                     text: 'Sign Up',
-                                     style: TextStyle(color: Colors.green),
-                                     recognizer: TapGestureRecognizer()..onTap = _onTapSignUpButton,
+                                    style: TextStyle(color: Colors.green),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = _onTapSignUpButton,
                                   ),
                                 ],
                               ),
@@ -99,23 +128,48 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-      void _onForgotPasswordButton() {
+  void _onForgotPasswordButton() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ForgotPasswordVerifyEmailScreen()),
+      MaterialPageRoute(
+        builder: (context) => ForgotPasswordVerifyEmailScreen(),
+      ),
     );
   }
 
-        void _onTapLoginButton() {
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      MainNavBarHolderScreen.name,
-      (predicate) => false,
-    );
+  void _onTapLoginButton() {
+    if (_formKey.currentState!.validate()) {
+      _login();
+    }
   }
 
+  Future<void> _login() async {
+    _loginInProgress = true;
+    setState(() {});
+    Map<String, dynamic> requestBody = {
+      'email': _emailTEController.text.trim(),
+      'password': _passwordTEController.text,
+    };
 
-  @override  void dispose() {
+    final ApiResponse response = await ApiCaller.postRequest(
+      url: Urls.loginUrl,
+      body: requestBody,
+    );
+    if (response.isSuccess && response.responseData['status'] == 'success') {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        MainNavBarHolderScreen.name,
+        (predicate) => false,
+      );
+    } else {
+      _loginInProgress = false;
+      setState(() {});
+      showSnackBarMessage(context, response.errorMessage!);
+    }
+  }
+
+  @override
+  void dispose() {
     _emailTEController.dispose();
     _passwordTEController.dispose();
     super.dispose();
